@@ -99,7 +99,7 @@ class AlbumsHandler {
 
       const { id } = request.params;
       const { name, year } = request.payload;
-      await this._service.editAlbumById(id, { name, year });  
+      await this._service.editAlbumById(id, { name, year });
 
       return {
         status: "success",
@@ -108,17 +108,17 @@ class AlbumsHandler {
     } catch (error) {
       if (error instanceof ClientError) {
         const response = h.response({
-          status: 'fail',
+          status: "fail",
           message: error.message,
         });
         response.code(error.statusCode);
         return response;
       }
- 
+
       // Server ERROR!
       const response = h.response({
-        status: 'error',
-        message: 'Maaf, terjadi kegagalan pada server kami.',
+        status: "error",
+        message: "Maaf, terjadi kegagalan pada server kami.",
       });
       response.code(500);
       console.error(error);
@@ -138,17 +138,17 @@ class AlbumsHandler {
     } catch (error) {
       if (error instanceof ClientError) {
         const response = h.response({
-          status: 'fail',
+          status: "fail",
           message: error.message,
         });
         response.code(error.statusCode);
         return response;
       }
- 
+
       // Server ERROR!
       const response = h.response({
-        status: 'error',
-        message: 'Maaf, terjadi kegagalan pada server kami.',
+        status: "error",
+        message: "Maaf, terjadi kegagalan pada server kami.",
       });
       response.code(500);
       console.error(error);

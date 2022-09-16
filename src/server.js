@@ -35,8 +35,8 @@ const init = async () => {
       options: {
         service: songsService,
         validator: SongsValidator,
-      }
-    }
+      },
+    },
   ]);
 
   await server.start();

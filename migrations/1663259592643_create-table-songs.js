@@ -15,35 +15,34 @@ exports.up = (pgm) => {
     year: {
       type: "INTEGER",
       notNull: true,
-    }, 
+    },
     genre: {
       type: "TEXT",
       notNull: true,
-    }, 
+    },
     performer: {
       type: "TEXT",
       notNull: true,
-    }, 
+    },
     duration: {
-      type: "INTEGER", 
-    },  
+      type: "INTEGER",
+    },
     album_id: {
-      type: "TEXT",  
-    },  
+      type: "TEXT",
+    },
     created_at: {
-      type: 'timestamp',
+      type: "timestamp",
       notNull: true,
-      default: pgm.func('current_timestamp'),
+      default: pgm.func("current_timestamp"),
     },
     updated_at: {
-      type: 'timestamp',
+      type: "timestamp",
       notNull: true,
-      default: pgm.func('current_timestamp'),
-    }
-  }); 
+      default: pgm.func("current_timestamp"),
+    },
+  });
 };
 
 exports.down = (pgm) => {
-  pgm.dropTable('songs');
+  pgm.dropTable("songs");
 };
- 

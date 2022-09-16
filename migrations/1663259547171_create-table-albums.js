@@ -15,20 +15,20 @@ exports.up = (pgm) => {
     year: {
       type: "INTEGER",
       notNull: true,
-    },  
+    },
     created_at: {
-      type: 'timestamp',
+      type: "timestamp",
       notNull: true,
-      default: pgm.func('current_timestamp'),
+      default: pgm.func("current_timestamp"),
     },
     updated_at: {
-      type: 'timestamp',
+      type: "timestamp",
       notNull: true,
-      default: pgm.func('current_timestamp'),
-    }
+      default: pgm.func("current_timestamp"),
+    },
   });
 };
 
 exports.down = (pgm) => {
-  pgm.dropTable('albums');
+  pgm.dropTable("albums");
 };
