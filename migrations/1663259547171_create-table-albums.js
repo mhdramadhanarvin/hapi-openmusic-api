@@ -13,17 +13,19 @@ exports.up = (pgm) => {
       notNull: true,
     },
     year: {
-      type: "TEXT",
+      type: "INTEGER",
       notNull: true,
-    }, 
-    createdAt: {
-      type: "timestamp",
-      notNull: true, 
+    },  
+    created_at: {
+      type: 'timestamp',
+      notNull: true,
+      default: pgm.func('current_timestamp'),
     },
-    updatedAt: {
-      type: "timestamp",
-      notNull: true, 
-    },
+    updated_at: {
+      type: 'timestamp',
+      notNull: true,
+      default: pgm.func('current_timestamp'),
+    }
   });
 };
 

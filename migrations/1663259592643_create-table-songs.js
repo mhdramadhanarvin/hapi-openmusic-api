@@ -8,18 +8,12 @@ exports.up = (pgm) => {
       type: "VARCHAR(50)",
       primaryKey: true,
     },
-    albumId: {
-      type: "TEXT",
-      notNull: true,
-      references: '"albums"',
-      onDelete: 'cascade',
-    },
     title: {
       type: "TEXT",
       notNull: true,
     },
     year: {
-      type: "TEXT",
+      type: "INTEGER",
       notNull: true,
     }, 
     genre: {
@@ -31,22 +25,25 @@ exports.up = (pgm) => {
       notNull: true,
     }, 
     duration: {
-      type: "TEXT",
+      type: "INTEGER", 
+    },  
+    album_id: {
+      type: "TEXT",  
+    },  
+    created_at: {
+      type: 'timestamp',
       notNull: true,
-    }, 
-    createdAt: {
-      type: "timestamp",
-      notNull: true,
+      default: pgm.func('current_timestamp'),
     },
-    updatedAt: {
-      type: "timestamp",
+    updated_at: {
+      type: 'timestamp',
       notNull: true,
-    },
-  });
-
-  pgm.createIndex('songs', 'albumId')
+      default: pgm.func('current_timestamp'),
+    }
+  }); 
 };
 
 exports.down = (pgm) => {
   pgm.dropTable('songs');
 };
+ 
