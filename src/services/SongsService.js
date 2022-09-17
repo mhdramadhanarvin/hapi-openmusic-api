@@ -9,9 +9,9 @@ class SongsService {
     this._pool = new Pool();
   }
 
-  async addSong({ title, year, genre, performer, duration, albumId }) {
-    const id = "song-" + nanoid(16);
-
+  async addSong({ title, year, genre, performer, duration, albumId }) { 
+    const id = `song-${nanoid(16)}`;
+    
     const query = {
       text: "INSERT INTO songs VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id",
       values: [id, title, year, genre, performer, duration, albumId],
@@ -27,7 +27,7 @@ class SongsService {
   }
 
   async getSongs({ title, performer }) {
-    let query = "SELECT * FROM songs ";
+    let query = "SELECT id, title, performer FROM songs ";
 
     if (title && !performer) {
       query += "WHERE LOWER(title) LIKE '%" + title.toLowerCase() + "%'";
@@ -42,7 +42,12 @@ class SongsService {
     }
 
     const result = await this._pool.query(query);
-    return result.rows.map(mapDBToModelSong);
+
+    if (!result.rowCount) {
+      throw new NotFoundError("Musik tidak ditemukan");
+    }
+
+    return result.rows;
   }
 
   async getSongById(id) {
@@ -52,7 +57,7 @@ class SongsService {
     };
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError("Musik tidak ditemukan");
     }
 
@@ -61,7 +66,7 @@ class SongsService {
 
   async getSongsByAlbumId(albumId) {
     const query = {
-      text: "SELECT * FROM songs WHERE album_id = $1",
+      text: "SELECT id, title, performer FROM songs WHERE album_id = $1",
       values: [albumId],
     };
     const result = await this._pool.query(query);
@@ -77,7 +82,7 @@ class SongsService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError("Gagal memperbarui musik. Id tidak ditemukan");
     }
   }
@@ -90,7 +95,7 @@ class SongsService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError("Musik gagal dihapus. Id tidak ditemukan");
     }
   }
