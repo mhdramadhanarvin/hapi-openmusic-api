@@ -38,9 +38,9 @@ exports.up = (pgm) => {
       notNull: true,
       default: pgm.func("current_timestamp"),
     },
-  });
-};
+  })
+}
 
 exports.down = (pgm) => {
-  pgm.dropTable("songs");
-};
+  pgm.dropTable("songs")
+}
