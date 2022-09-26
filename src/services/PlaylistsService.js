@@ -3,10 +3,12 @@ const { Pool } = require("pg")
 const InvariantError = require("../exceptions/InvariantError")
 const NotFoundError = require("../exceptions/NotFoundError")
 const AuthorizationError = require("../exceptions/AuthorizationError")
+const SongsService = require("./SongsService")
 
 class PlaylistsService {
   constructor() {
     this._pool = new Pool()
+    this._songsService = new SongsService()
   }
   
   async addPlaylist({name, owner}) {
@@ -26,9 +28,9 @@ class PlaylistsService {
     return result.rows[0].id
   }
 
-  async getPlaylists(owner) {
+  async getPlaylists({owner}) {
     const query = {
-      text: "SELECT playlists.*, users.username FROM playlists LEFT JOIN users ON playlists.owner = users.id WHERE playlists.owner = $1",
+      text: "SELECT playlists.id, playlists.name, users.username FROM playlists LEFT JOIN users ON playlists.owner = users.id WHERE playlists.owner = $1",
       values: [owner],
     }
 
@@ -36,7 +38,7 @@ class PlaylistsService {
     return result.rows
   }
 
-  async deletePlaylist(id) {
+  async deletePlaylistById(id) {
     const query = {
       text: "DELETE FROM playlists WHERE id = $1 RETURNING id",
       values: [id],
@@ -49,8 +51,10 @@ class PlaylistsService {
     }
   }
 
-  async addSongtoPlaylist(playlist_id, song_id) {
+  async addSongtoPlaylistByPlaylistIdAndSongId(playlist_id, song_id) {
     const id = nanoid(16)
+
+    await this._songsService.getSongById(song_id)
 
     const query = {
       text: "INSERT INTO playlist_songs VALUES ($1, $2, $3) RETURNING id",
@@ -66,7 +70,7 @@ class PlaylistsService {
     return result.rows[0].id
   }
 
-  async getSongsInPlaylist(id) {
+  async getSongsInPlaylistById(id) {
     const queryPlaylist = {
       text: "SELECT playlists.*, users.username FROM playlists LEFT JOIN users ON playlists.owner = users.id WHERE playlists.id = $1",
       values: [id],
@@ -85,7 +89,7 @@ class PlaylistsService {
 
     const resultSongInPlaylist = await this._pool.query(querySongInPlaylist)
 
-    return resultSongInPlaylist.rows
+    return resultPlayist.rows
 
   }
 

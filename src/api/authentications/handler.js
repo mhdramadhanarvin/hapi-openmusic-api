@@ -23,7 +23,7 @@ class AuthenticationsHandler {
         password
       )
       
-      const accessToken = this._tokenManager.generateAccessToken({ id })
+      const accessToken = this._tokenManager.generateAccessToken({ userId: id })
       const refreshToken = this._tokenManager.generateRefreshToken({ id })
 
       await this._authenticationsService.addRefreshToken(refreshToken)

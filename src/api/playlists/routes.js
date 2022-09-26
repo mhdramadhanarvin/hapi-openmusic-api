@@ -7,29 +7,41 @@ const routes = (handler) => [
       auth: "openmusiapi_jwt",
     },
   },
-  // {
-  //   method: "GET",
-  //   path: "playlists",
-  //   handler: () => handler.getPlaylistsHandler(),
-  // },
+  {
+    method: "GET",
+    path: "/playlists",
+    handler: (request) => handler.getPlaylistsHandler(request),
+    options: {
+      auth: "openmusiapi_jwt",
+    },
+  },
+  {
+    method: "DELETE",
+    path: "/playlists/{id}",
+    handler: (request) => handler.deletePlaylistByIdHandler(request),
+    options: {
+      auth: "openmusiapi_jwt",
+    },
+  },
+  {
+    method: "POST",
+    path: "/playlists/{id}/songs",
+    handler: (request, h) => handler.postSongToPlaylistByIdHandler(request, h),
+    options: {
+      auth: "openmusiapi_jwt",
+    },
+  },
+  {
+    method: "GET",
+    path: "/playlists/{id}/songs",
+    handler: (request) => handler.getSongInPlaylistByIdHandler(request),
+    options: {
+      auth: "openmusiapi_jwt",
+    },
+  },
   // {
   //   method: "DELETE",
-  //   path: "playlists/{id}",
-  //   handler: (request, h) => handler.deletePlaylistByIdHandler(request, h),
-  // },
-  // {
-  //   method: "POST",
-  //   path: "playlists/{id}/songs",
-  //   handler: (request, h) => handler.postSongToPlaylistByIdHandler(request, h),
-  // },
-  // {
-  //   method: "GET",
-  //   path: "playlists/{id}/songs",
-  //   handler: (request, h) => handler.getSongInPlaylistByIdHandler(request, h),
-  // },
-  // {
-  //   method: "DELETE",
-  //   path: "playlists/{id}/songs",
+  //   path: "/playlists/{id}/songs",
   //   handler: (request, h) => handler.deleteSongFromPlaylistByIdHandler(request, h),
   // },
 ]
