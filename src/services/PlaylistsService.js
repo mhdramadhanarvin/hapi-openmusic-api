@@ -4,11 +4,15 @@ const InvariantError = require("../exceptions/InvariantError")
 const NotFoundError = require("../exceptions/NotFoundError")
 const AuthorizationError = require("../exceptions/AuthorizationError")
 const SongsService = require("./SongsService")
+const CollaborationsService = require("./CollaborationsService")
+const PlaylistSongActivitiesService = require("./PlaylistSongActivitiesService")
 
 class PlaylistsService {
   constructor() {
-    this._pool = new Pool()
-    this._songsService = new SongsService()
+    this._pool = new Pool
+    this._songsService = new SongsService
+    this._collaborationService = new CollaborationsService
+    this._playlistSongActivitiesService = new PlaylistSongActivitiesService
   }
   
   async addPlaylist({name, owner}) {
@@ -51,28 +55,28 @@ class PlaylistsService {
     }
   }
 
-  async addSongtoPlaylistByPlaylistIdAndSongId(playlist_id, song_id) {
+  async addSongtoPlaylistByPlaylistIdAndSongId({playlistId, songId, userId}) {
     const id = nanoid(16)
-
-    await this._songsService.getSongById(song_id)
+    
+    await this._songsService.getSongById(songId)
 
     const query = {
       text: "INSERT INTO playlist_songs VALUES ($1, $2, $3) RETURNING id",
-      values: [id, playlist_id, song_id],
+      values: [id, playlistId, songId],
     }
 
     const result = await this._pool.query(query)
 
     if (!result.rows[0].id) {
       throw new InvariantError("Lagu gagal ditambahkan ke playlist")
-    }
-
-    return result.rows[0].id
+    } 
+    
+    await this._playlistSongActivitiesService.addActivity({ playlistId, songId, userId}) 
   }
 
   async getSongsInPlaylistById(id) {
     const queryPlaylist = {
-      text: "SELECT playlists.*, users.username FROM playlists LEFT JOIN users ON playlists.owner = users.id WHERE playlists.id = $1",
+      text: "SELECT playlists.id, playlists.name, users.username FROM playlists LEFT JOIN users ON playlists.owner = users.id WHERE playlists.id = $1",
       values: [id],
     }
 
@@ -83,20 +87,25 @@ class PlaylistsService {
     }
 
     const querySongInPlaylist = {
-      text: "SELECT * FROM playlist_songs LEFT JOIN songs ON playlist_songs.song_id = songs.id WHERE playlist_songs.playlist_id = $1",
+      text: "SELECT songs.id, songs.title, songs.performer FROM playlist_songs LEFT JOIN songs ON playlist_songs.song_id = songs.id WHERE playlist_songs.playlist_id = $1",
       values: [id]
     }
 
     const resultSongInPlaylist = await this._pool.query(querySongInPlaylist)
 
-    return resultPlayist.rows
+    const result = resultPlayist.rows[0]
 
+    result.songs = resultSongInPlaylist.rows
+
+    return result  
   }
 
-  async deleteSongInPlaylist(playlist_id, song_id) {
+  async deleteSongInPlaylist(playlistId, songId, userId) {
+    await this._songsService.getSongById(songId)
+    
     const query = {
       text: "DELETE FROM playlist_songs WHERE playlist_id = $1 AND song_id = $2 RETURNING id",
-      values: [playlist_id, song_id],
+      values: [playlistId, songId],
     }
 
     const result = await this._pool.query(query)
@@ -104,6 +113,9 @@ class PlaylistsService {
     if (!result.rowCount) {
       throw new NotFoundError("Lagu gagal dihapus dari playlist. Id tidak ditemukan")
     }
+
+    // await this._playlistSongActivitiesService.addActivity({ playlist_id, song_id, user_id, action: "delete"})
+    await this._playlistSongActivitiesService.addActivity({ playlistId, songId, userId, action: "delete"}) 
   }
 
 
@@ -131,11 +143,11 @@ class PlaylistsService {
       if (error instanceof NotFoundError) {
         throw error
       }
-      // try {
-      //   await this._collaborationService.verifyCollaborator(playlistId, userId);
-      // } catch {
-      //   throw error;
-      // }
+      try {
+        await this._collaborationService.verifyCollaborator(playlistId, userId)
+      } catch {
+        throw error
+      }
     }
   } 
 }
