@@ -1,8 +1,9 @@
 const autoBind = require("auto-bind")
 
 class PlaylistsHandler {
-  constructor(service, validator) {
-    this._service = service
+  constructor(playlistsService, playlistSongActivitiesService, validator) {
+    this._playlistsService = playlistsService
+    this._playlistSongActivitiesService = playlistSongActivitiesService
     this._validator = validator
 
     autoBind(this)
@@ -13,7 +14,7 @@ class PlaylistsHandler {
     const { name } = request.payload
     const { id: credentialId } = request.auth.credentials
 
-    const playlistId = await this._service.addPlaylist({name, owner: credentialId})
+    const playlistId = await this._playlistsService.addPlaylist({name, owner: credentialId})
 
     const response = h.response({
       status: "success",
@@ -30,7 +31,7 @@ class PlaylistsHandler {
   async getPlaylistsHandler(request) {
     const { id: credentialId } = request.auth.credentials
     
-    const playlists = await this._service.getPlaylists({owner: credentialId})
+    const playlists = await this._playlistsService.getPlaylists({owner: credentialId})
 
     return {
       status: "success",
@@ -44,8 +45,8 @@ class PlaylistsHandler {
     const { id } = request.params
     const { id: credentialId } = request.auth.credentials
 
-    await this._service.verifyPlaylistOwner(id, credentialId) 
-    await this._service.deletePlaylistById(id)
+    await this._playlistsService.verifyPlaylistOwner(id, credentialId) 
+    await this._playlistsService.deletePlaylistById(id)
 
     return {
       status: "success",
@@ -58,10 +59,10 @@ class PlaylistsHandler {
 
     const { songId } = request.payload
     const { id: playlistId } = request.params
-    const { id: credentialId } = request.auth.credentials                   
-    // return { playlistId, songId, credentialId }
-    await this._service.verifyPlaylistOwner(playlistId, credentialId)
-    await this._service.addSongtoPlaylistByPlaylistIdAndSongId({playlistId, songId, userId: credentialId})
+    const { id: credentialId } = request.auth.credentials
+
+    await this._playlistsService.verifyPlaylistAccess(playlistId, credentialId)
+    await this._playlistsService.addSongtoPlaylistByPlaylistIdAndSongId({playlistId, songId, userId: credentialId})
 
     const response = h.response({
       status: "success",
@@ -76,8 +77,8 @@ class PlaylistsHandler {
     const { id: credentialId } = request.auth.credentials
     const { id } = request.params
 
-    await this._service.verifyPlaylistOwner(id, credentialId)
-    const playlist = await this._service.getSongsInPlaylistById(id)
+    await this._playlistsService.verifyPlaylistAccess(id, credentialId)
+    const playlist = await this._playlistsService.getSongsInPlaylistById(id)
 
     return {
       status: "success",
@@ -93,12 +94,28 @@ class PlaylistsHandler {
     const { id: playlistId } = request.params
     const { songId } = request.payload
 
-    await this._service.verifyPlaylistOwner(playlistId, credentialId)
-    await this._service.deleteSongInPlaylist(playlistId, songId, credentialId)
+    await this._playlistsService.verifyPlaylistAccess(playlistId, credentialId)
+    await this._playlistsService.deleteSongInPlaylist(playlistId, songId, credentialId)
 
     return {
       status: "success",
       message: "Musik berhasil dihapus dari playlist",
+    }
+  }
+
+  async getPlaylistActivitiesByIdHandler(request) {
+    const { id: playlistId } = request.params
+    const { id: credentialId } = request.auth.credentials
+
+    await this._playlistsService.verifyPlaylistOwner(playlistId, credentialId)
+    const activities = await this._playlistSongActivitiesService.getActivitiesById(playlistId)
+
+    return {
+      status: "success",
+      data: {
+        playlistId,
+        activities
+      }
     }
   }
 

@@ -33,14 +33,22 @@ class PlaylistsService {
   }
 
   async getPlaylists({owner}) {
-    const query = {
+    const queryPlaylistOwn = {
       text: "SELECT playlists.id, playlists.name, users.username FROM playlists LEFT JOIN users ON playlists.owner = users.id WHERE playlists.owner = $1",
       values: [owner],
     }
 
-    const result = await this._pool.query(query)
-    return result.rows
-  }
+    const resultPlaylistOwn = await this._pool.query(queryPlaylistOwn)
+
+    const queryPlaylistCollaborated = {
+      text: "SELECT playlists.id, playlists.name, users.username FROM collaborations LEFT JOIN playlists ON collaborations.playlist_id = playlists.id LEFT JOIN users ON playlists.owner = users.id WHERE collaborations.user_id = $1",
+      values: [owner],
+    }
+
+    const resultPlaylistCollaborated = await this._pool.query(queryPlaylistCollaborated) 
+
+    return resultPlaylistOwn.rows.concat(resultPlaylistCollaborated.rows)
+  } 
 
   async deletePlaylistById(id) {
     const query = {
@@ -113,8 +121,7 @@ class PlaylistsService {
     if (!result.rowCount) {
       throw new NotFoundError("Lagu gagal dihapus dari playlist. Id tidak ditemukan")
     }
-
-    // await this._playlistSongActivitiesService.addActivity({ playlist_id, song_id, user_id, action: "delete"})
+ 
     await this._playlistSongActivitiesService.addActivity({ playlistId, songId, userId, action: "delete"}) 
   }
 

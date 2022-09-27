@@ -23,6 +23,7 @@ const PlaylistsValidator = require("./validator/playlists")
 const CollaborationssValidator = require("./validator/collaborations")
 
 const TokenManager = require("./tokenize/TokenManager")
+const PlaylistSongActivitiesService = require("./services/PlaylistSongActivitiesService")
 
 const init = async () => {
   const albumsService = new AlbumsService()
@@ -31,6 +32,7 @@ const init = async () => {
   const authenticationsService = new AuthenticationsService()
   const playlistsService = new PlaylistsService()
   const collaborationsService = new CollaborationsService()
+  const playlistSongActivitiesService = new PlaylistSongActivitiesService()
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -98,14 +100,17 @@ const init = async () => {
     {
       plugin: playlists,
       options: {
-        service: playlistsService,
+        playlistsService,
+        playlistSongActivitiesService,
         validator: PlaylistsValidator,
       },
     },
     {
       plugin: collaborations,
       options: {
-        service: collaborationsService,
+        collaborationsService,
+        playlistsService,
+        usersService,
         validator: CollaborationssValidator,
       },
     },
@@ -130,6 +135,7 @@ const init = async () => {
         return h.continue
       }
       // penanganan server error sesuai kebutuhan 
+      console.log(response)
       const newResponse = h.response({
         status: "error",
         message: "terjadi kegagalan pada server kami",
