@@ -7,7 +7,7 @@ class CollaborationsService {
     this._pool = new Pool()
   }
 
-  async addCollaboration(playlistId, userId) {
+  async addCollaboration({playlistId, userId}) {
     const id = `collab-${nanoid(16)}`
 
     const query = {

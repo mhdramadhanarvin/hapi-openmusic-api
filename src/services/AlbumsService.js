@@ -1,8 +1,7 @@
 const { nanoid } = require("nanoid")
 const { Pool } = require("pg")
 const InvariantError = require("../exceptions/InvariantError")
-const NotFoundError = require("../exceptions/NotFoundError")
-const { mapDBToModelAlbum } = require("../utils")
+const NotFoundError = require("../exceptions/NotFoundError") 
 const SongsService = require("./SongsService")
 
 class AlbumsService {
@@ -29,8 +28,8 @@ class AlbumsService {
   }
 
   async getAlbums() {
-    const result = await this._pool.query("SELECT * FROM albums")
-    return result.rows.map(mapDBToModelAlbum)
+    const result = await this._pool.query("SELECT id, name, year FROM albums")
+    return result.rows
   }
 
   async getAlbumById(id) {
@@ -46,7 +45,7 @@ class AlbumsService {
 
     const resultRelatedSong = await this._songService.getSongsByAlbumId(id)
 
-    const result = resultAlbum.rows.map(mapDBToModelAlbum)[0]
+    const result = resultAlbum.rows[0]
 
     if (resultRelatedSong.length) {
       result.songs = resultRelatedSong
