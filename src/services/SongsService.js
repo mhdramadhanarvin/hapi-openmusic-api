@@ -27,28 +27,13 @@ class SongsService {
     return result.rows[0].id
   }
 
-  async getSongs({ title, performer }) {
-    let query = "SELECT id, title, performer FROM songs "
-
-    if (title && !performer) {
-      query += `WHERE LOWER(title) LIKE '%${title.toLowerCase()}%'`
+  async getSongs({ title= "", performer= "" }) {
+    const query = {
+      text: "SELECT id, title, performer FROM songs WHERE title ILIKE $1 and performer ILIKE $2",
+      values: [`%${title}%`, `%${performer}%`],
     }
-    if (!title && performer) {
-      query
-        += `WHERE LOWER(performer) LIKE '%${performer.toLowerCase()}%'`
-    }
-    if (title && performer) {
-      query += `WHERE LOWER(title) LIKE '%${title.toLowerCase()}%'`
-      query += ` AND LOWER(performer) LIKE '%${performer.toLowerCase()}%'`
-    }
-
-    const result = await this._pool.query(query)
-
-    if (!result.rowCount) {
-      throw new NotFoundError("Musik tidak ditemukan")
-    }
-
-    return result.rows
+    const { rows } = await this._pool.query(query)
+    return rows
   }
 
   async getSongById(id) {
@@ -70,9 +55,9 @@ class SongsService {
       text: "SELECT id, title, performer FROM songs WHERE album_id = $1",
       values: [albumId],
     }
-    const result = await this._pool.query(query)
+    const { rows } = await this._pool.query(query)
 
-    return result.rows
+    return rows
   }
 
   async editSongById(id, {
