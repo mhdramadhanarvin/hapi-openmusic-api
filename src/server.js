@@ -8,19 +8,21 @@ const users = require("./api/users")
 const authentications = require("./api/authentications")
 const playlists = require("./api/playlists")
 const collaborations = require("./api/collaborations")
+const _exports  = require("./api/exports")
 const ClientError = require("./exceptions/ClientError")
 const AlbumsService = require("./services/AlbumsService")
 const SongsService = require("./services/SongsService")
 const UsersService = require("./services/UsersService")
 const AuthenticationsService = require("./services/AuthenticationsService")
 const PlaylistsService = require("./services/PlaylistsService")
-const CollaborationsService = require("./services/CollaborationsService")
+const CollaborationsService = require("./services/CollaborationsService")  
 const AlbumsValidator = require("./validator/albums")
 const SongsValidator = require("./validator/songs")
 const UsersValidator = require("./validator/users")
 const AuthenticationsValidator = require("./validator/authentications")
 const PlaylistsValidator = require("./validator/playlists")
 const CollaborationssValidator = require("./validator/collaborations")
+const ExportsValidator = require("./validator/exports")
 
 const TokenManager = require("./tokenize/TokenManager")
 const PlaylistSongActivitiesService = require("./services/PlaylistSongActivitiesService")
@@ -33,6 +35,7 @@ const init = async () => {
   const playlistsService = new PlaylistsService()
   const collaborationsService = new CollaborationsService()
   const playlistSongActivitiesService = new PlaylistSongActivitiesService()
+  const ProducerService = require("./services/ProducerService")
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -114,7 +117,15 @@ const init = async () => {
         validator: CollaborationssValidator,
       },
     },
-  ])
+    {
+      plugin: _exports,
+      options: {
+        ProducerService,  
+        playlistsService,
+        validator: ExportsValidator,
+      },
+    },
+  ]) 
 
   server.ext("onPreResponse", (request, h) => {
     // mendapatkan konteks response dari request
@@ -146,9 +157,9 @@ const init = async () => {
     // jika bukan error, lanjutkan dengan response sebelumnya (tanpa terintervensi)
     return h.continue
   })
-
+ 
   await server.start()
-  console.log(`Server berjalan pada ${server.info.uri}`)
+  console.log(`Server berjalan pada ${server.info.uri}`) 
 }
 
 init()
