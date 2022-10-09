@@ -2,6 +2,7 @@ const { nanoid } = require("nanoid")
 const { Pool } = require("pg")
 const InvariantError = require("../exceptions/InvariantError")
 const NotFoundError = require("../exceptions/NotFoundError") 
+const { mapDBToModel } = require("../utils/mapping")
 const SongsService = require("./SongsService")
 
 class AlbumsService {
@@ -34,7 +35,7 @@ class AlbumsService {
 
   async getAlbumById(id) {
     const queryAlbum = {
-      text: "SELECT id, name, year FROM albums WHERE id = $1",
+      text: "SELECT id, name, year, cover FROM albums WHERE id = $1",
       values: [id],
     }
     const resultAlbum = await this._pool.query(queryAlbum)
@@ -45,7 +46,7 @@ class AlbumsService {
 
     const resultRelatedSong = await this._songService.getSongsByAlbumId(id)
 
-    const result = resultAlbum.rows[0]
+    const result = resultAlbum.rows.map(mapDBToModel)[0]
 
     if (resultRelatedSong.length) {
       result.songs = resultRelatedSong
@@ -56,7 +57,7 @@ class AlbumsService {
 
   async editAlbumById(id, { name, year }) {
     const query = {
-      text: "UPDATE albums SET name = $1, year = $2 WHERE id = $3 RETURNING id",
+      text: "UPDATE albums SET name = $1, year = $2 WHERE id = $3",
       values: [name, year, id],
     }
 
@@ -64,6 +65,19 @@ class AlbumsService {
 
     if (!result.rowCount) {
       throw new NotFoundError("Gagal memperbarui album. Id tidak ditemukan")
+    }
+  }
+
+  async editCoverAlbumById(id, coverUrl) {
+    const query = {
+      text: "UPDATE albums SET cover = $1 WHERE id = $2",
+      values: [coverUrl, id]
+    }
+
+    const result = await this._pool.query(query)
+
+    if (!result.rowCount) {
+      throw new NotFoundError("Gagal memperbarui cover album. Id tidak ditemukan")
     }
   }
 
