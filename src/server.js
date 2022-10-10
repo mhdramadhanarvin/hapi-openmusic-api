@@ -13,6 +13,7 @@ const playlists = require("./api/playlists")
 const collaborations = require("./api/collaborations")
 const _exports  = require("./api/exports")
 const uploads = require("./api/uploads")
+const albumLikes = require("./api/album_likes")
 
 const ClientError = require("./exceptions/ClientError")
 
@@ -24,6 +25,7 @@ const PlaylistsService = require("./services/PlaylistsService")
 const CollaborationsService = require("./services/CollaborationsService")  
 const PlaylistSongActivitiesService = require("./services/PlaylistSongActivitiesService")
 const StorageService = require("./services/StorageService")
+const AlbumLikesService = require("./services/AlbumLikesService")
 
 const AlbumsValidator = require("./validator/albums")
 const SongsValidator = require("./validator/songs")
@@ -32,24 +34,28 @@ const AuthenticationsValidator = require("./validator/authentications")
 const PlaylistsValidator = require("./validator/playlists")
 const CollaborationssValidator = require("./validator/collaborations")
 const ExportsValidator = require("./validator/exports")
-const UploadsValidator = require("./validator/uploads")
+const UploadsValidator = require("./validator/uploads") 
 
-const TokenManager = require("./tokenize/TokenManager")
+const TokenManager = require("./tokenize/TokenManager") 
+const CacheService = require("./services/CacheService")
+const config = require("./utils/config")
 
 const init = async () => {
-  const albumsService = new AlbumsService()
   const songsService = new SongsService()
+  const albumsService = new AlbumsService(songsService)
   const usersService = new UsersService()
   const authenticationsService = new AuthenticationsService()
-  const playlistsService = new PlaylistsService()
   const collaborationsService = new CollaborationsService()
   const playlistSongActivitiesService = new PlaylistSongActivitiesService()
+  const playlistsService = new PlaylistsService(songsService, collaborationsService, playlistSongActivitiesService)
   const ProducerService = require("./services/ProducerService")
   const storageService = new StorageService(path.resolve(__dirname, "api/uploads/file/images"))
+  const cacheService = new CacheService() 
+  const albumLikesService = new AlbumLikesService(albumsService, cacheService) 
 
   const server = Hapi.server({
-    port: process.env.PORT,
-    host: process.env.HOST,
+    port: config.app.port,
+    host: config.app.host,
     routes: {
       cors: {
         origin: ["*"],
@@ -67,12 +73,12 @@ const init = async () => {
   ])
 
   server.auth.strategy("openmusiapi_jwt", "jwt", {
-    keys: process.env.ACCESS_TOKEN_KEY,
+    keys: config.jwt.access_token_key,
     verify: {
       aud: false,
       iss: false,
       sub: false,
-      maxAgeSec: process.env.ACCESS_TOKEN_AGE,
+      maxAgeSec: config.jwt.access_token_age,
     },
     validate: (artifacts) => ({
       isValid: true,
@@ -144,6 +150,13 @@ const init = async () => {
         storageService,
         albumsService,
         validator: UploadsValidator,
+      },
+    },
+    {
+      plugin: albumLikes,
+      options: {
+        albumLikesService,
+        albumsService
       },
     },
   ]) 

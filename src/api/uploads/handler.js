@@ -18,8 +18,7 @@ class UploadsHandler {
     const album = await this._albumsService.getAlbumById(id)
     const coverFileName = !album.coverUrl
       ? null
-      : album.coverUrl.split("/").filter(Boolean).at(-1)
-    console.log({ coverFileName, __filename })
+      : album.coverUrl.split("/").filter(Boolean).at(-1) 
     const newCoverFileName = await this._uploadService.writeFile(
       cover,
       cover.hapi,

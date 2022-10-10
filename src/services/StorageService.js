@@ -15,8 +15,7 @@ class StorageService {
       .filter(Boolean)
       .slice(1)
       .join(".")
-    const filename = oldNameFile ?? +new Date() + "." + extension
-    console.log({ filename, __filename })
+    const filename = oldNameFile ?? +new Date() + "." + extension 
 
     const path = `${this._folder}/${filename}`
 

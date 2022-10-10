@@ -2,17 +2,14 @@ const { nanoid } = require("nanoid")
 const { Pool } = require("pg")
 const InvariantError = require("../exceptions/InvariantError")
 const NotFoundError = require("../exceptions/NotFoundError")
-const AuthorizationError = require("../exceptions/AuthorizationError")
-const SongsService = require("./SongsService")
-const CollaborationsService = require("./CollaborationsService")
-const PlaylistSongActivitiesService = require("./PlaylistSongActivitiesService")
+const AuthorizationError = require("../exceptions/AuthorizationError") 
 
 class PlaylistsService {
-  constructor() {
+  constructor(songsService, collaborationsService, playlistSongActivitiesService) {
     this._pool = new Pool
-    this._songsService = new SongsService
-    this._collaborationService = new CollaborationsService
-    this._playlistSongActivitiesService = new PlaylistSongActivitiesService
+    this._songsService = songsService
+    this._collaborationService = collaborationsService
+    this._playlistSongActivitiesService = playlistSongActivitiesService
   }
   
   async addPlaylist({name, owner}) {
