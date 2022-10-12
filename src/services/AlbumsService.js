@@ -7,7 +7,7 @@ const { mapDBToModel } = require("../utils/mapping")
 class AlbumsService {
   constructor(songsService) {
     this._pool = new Pool()
-    this._songService = songsService
+    this._songsService = songsService 
   }
 
   async addAlbum({ name, year }) {
@@ -43,7 +43,7 @@ class AlbumsService {
       throw new NotFoundError("Album tidak ditemukan")
     }
 
-    const resultRelatedSong = await this._songService.getSongsByAlbumId(id)
+    const resultRelatedSong = await this._songsService.getSongsByAlbumId(id)
 
     const result = resultAlbum.rows.map(mapDBToModel)[0]
 

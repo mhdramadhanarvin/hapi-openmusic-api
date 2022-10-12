@@ -41,16 +41,16 @@ const CacheService = require("./services/CacheService")
 const config = require("./utils/config")
 
 const init = async () => {
+  const cacheService = new CacheService() 
   const songsService = new SongsService()
   const albumsService = new AlbumsService(songsService)
   const usersService = new UsersService()
   const authenticationsService = new AuthenticationsService()
-  const collaborationsService = new CollaborationsService()
+  const collaborationsService = new CollaborationsService(cacheService)
   const playlistSongActivitiesService = new PlaylistSongActivitiesService()
-  const playlistsService = new PlaylistsService(songsService, collaborationsService, playlistSongActivitiesService)
+  const playlistsService = new PlaylistsService(songsService, collaborationsService, playlistSongActivitiesService, cacheService)
   const ProducerService = require("./services/ProducerService")
   const storageService = new StorageService(path.resolve(__dirname, "api/uploads/file/images"))
-  const cacheService = new CacheService() 
   const albumLikesService = new AlbumLikesService(albumsService, cacheService) 
 
   const server = Hapi.server({
